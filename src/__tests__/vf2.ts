@@ -1,5 +1,6 @@
 
 import Graph from "../graph/Graph"
+import VF2Matcher from "../matcher/VF2Matcher"
 
 function getG1(){
    let g = new Graph()
@@ -30,6 +31,7 @@ function getG2(){
   g.addEdgeById("0","label","0", "2");
   g.addEdgeById("1","label","1", "2");
   g.addEdgeById("2","label","2", "3");
+  return g
 }
 
 let g1 = getG1()
@@ -51,3 +53,10 @@ test('getInComingingVertices', () => {
     expect(len).toEqual(2)
   },1000);
   
+  test('match', () => {
+    let matcher = new VF2Matcher();
+    let cb = function(map){
+        console.log(map)
+    }
+    let map= matcher.match(g1, g2,cb)
+  },1000);

@@ -1,19 +1,21 @@
+import { stat } from "fs";
 import Graph from "../graph/Graph";
 import State from "./State";
 
 export default class VF2Matcher {
-
-    match(modelGraph: Graph, patternGraph: Graph) {
+    mapping: any;
+    match(modelGraph: Graph, patternGraph: Graph,cb) {
         let state = new State(modelGraph, patternGraph);
-		return this.matchInternal(state, modelGraph, patternGraph); 
-
+        this.matchInternal(state, modelGraph, patternGraph,cb);
+        return this.mapping
     }
 
     // internal method for finding subgraphs. called recursively
-    matchInternal(s: State, modelGraph: Graph, patternGraph: Graph) {
+    matchInternal(s: State, modelGraph: Graph, patternGraph: Graph,cb) {
         // abort search if we reached the final level of the search tree 
         if (s.depth == patternGraph.nodes.size) {
-            return s.printMapping(); // all pattern nodes matched -> print solution
+            let map = s.printMapping()
+            cb(map)
         }
         else {
 			let candiatePairs = this.getCandidatePairs(s, modelGraph, patternGraph);
@@ -23,9 +25,9 @@ export default class VF2Matcher {
                 // check if candidate pair (n,m) is feasible 
 				if (this.checkFeasibility(s,n,m)) {
 					
-					s.match(n, m); // extend mapping
-					this.matchInternal(s, modelGraph, patternGraph); // recursive call
-					s.backtrack(n, m); // remove (n,m) from the mapping
+                    s.match(n, m); // extend mapping
+                    this.matchInternal(s, modelGraph, patternGraph,cb); // recursive call
+                    s.backtrack(n, m); // remove (n,m) from the mapping
                 }
             })
         }

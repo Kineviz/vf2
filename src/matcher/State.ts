@@ -187,9 +187,10 @@ export default class State {
     }
 
     printMapping(){
+        this.core_2.forEach((v,k)=>{
+            console.log(`(${k}-${v})`)
+        })
         return this.core_2
-        // this.core_2.forEach((v,k)=>{
-        //     console.log(`(${k}-${v})`)
-        // })
+
     }
 }
