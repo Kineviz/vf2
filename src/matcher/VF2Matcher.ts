@@ -5,7 +5,7 @@ export default class VF2Matcher {
 
     match(modelGraph: Graph, patternGraph: Graph) {
         let state = new State(modelGraph, patternGraph);
-		this.matchInternal(state, modelGraph, patternGraph); 
+		return this.matchInternal(state, modelGraph, patternGraph); 
 
     }
 
@@ -13,7 +13,7 @@ export default class VF2Matcher {
     matchInternal(s: State, modelGraph: Graph, patternGraph: Graph) {
         // abort search if we reached the final level of the search tree 
         if (s.depth == patternGraph.nodes.size) {
-            s.printMapping(); // all pattern nodes matched -> print solution
+            return s.printMapping(); // all pattern nodes matched -> print solution
         }
         else {
 			let candiatePairs = this.getCandidatePairs(s, modelGraph, patternGraph);
@@ -139,7 +139,7 @@ export default class VF2Matcher {
         })
 
         let T2in = new Map(s.T2in)
-        s.modelGraph.getInComingingVertices(m).forEach(id=>{
+        s.patternGraph.getInComingingVertices(m).forEach(id=>{
             T2in.delete(id)
         })
 
