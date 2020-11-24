@@ -1,11 +1,5 @@
-import React from 'react';
-import ReactDOM from 'react-dom';
-import './index.css';
-import App from './App';
 
-
-import Graph from "./graph/Graph"
-import VF2Matcher from './matcher/VF2Matcher';
+import Graph from "../graph/Graph"
 
 function getG1(){
    let g = new Graph()
@@ -36,18 +30,24 @@ function getG2(){
   g.addEdgeById("0","label","0", "2");
   g.addEdgeById("1","label","1", "2");
   g.addEdgeById("2","label","2", "3");
-  return g
 }
 
-let  g1 = getG1();
-let  g2 = getG2();
+let g1 = getG1()
+let g2 = getG2()
+beforeAll(()=>{
+    
+},1000)
 
-let matcher = new VF2Matcher();
-matcher.match(g1, g2); // starts pattern search
+test('getInComingingVertices', () => {
+    let incommingNodes =  g1.getInComingingVertices("3")
+    let len = incommingNodes.length
+    expect(len).toEqual(2)
+  },1000);
 
-ReactDOM.render(
-  <React.StrictMode>
-    <App />
-  </React.StrictMode>,
-  document.getElementById('root')
-);
+  test('getOutgoingVertices', () => {
+    let outGoingVertices =  g1.getOutgoingVertices("0")
+    let len = outGoingVertices.length
+    debugger
+    expect(len).toEqual(2)
+  },1000);
+  
