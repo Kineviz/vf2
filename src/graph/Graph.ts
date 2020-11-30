@@ -13,14 +13,24 @@ export default class Graph{
         this.adjacencyMatrix = new Map()
     }
 
-    addNode(id:string,label:string){
-        this.nodes.set(id,new GNode(id, label));
+    addNode(id:string,label:string,properties:Array<string>){
+        this.nodes.set(id,new GNode(id, label,properties));
         this.adjacencyMatrixUpdateNeeded = true
     }
 
-    addEdge(id:string,label:string,source:GNode,target:GNode){
-        this.edges.set(id,new Edge(label,source,target))
+    addNodePropertyContraint(nodeId:string,property:string,constraint:Object){
+        let node = this.nodes.get(nodeId)
+        node.constraints.set(property,constraint)
+    }
+
+    addEdge(id:string,label:string,source:GNode,target:GNode,properties:Array<string>){
+        this.edges.set(id,new Edge(label,source,target,properties))
         this.adjacencyMatrixUpdateNeeded = true
+    }
+
+    addEdgePropertyConstraint(edgeId:string,property:string,constraint:Object){
+        let edge = this.edges.get(edgeId)
+        edge.constraints.set(property,constraint)
     }
 
     addEdgeById(id:string,label:string,sourceId:string,targetId:string){
