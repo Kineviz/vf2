@@ -92,6 +92,16 @@ export default class State {
         return this.core_2.get(nodeId) === undefined && this.out_2.get(nodeId)
     }
 
+    inN1Tilde(nodeId:string){
+        return this.core_1.get(nodeId) === undefined && this.in_1.get(nodeId) === undefined && this.out_1.get(nodeId) === undefined
+    }
+
+    inN2Tilde(nodeId:string){
+        return this.core_2.get(nodeId) === undefined && this.in_2.get(nodeId) === undefined && this.out_2.get(nodeId) === undefined
+    }
+
+
+
     // extends the current matching by the pair (n,m) -> going down one level in the search tree
     // n is the id of a model graph node
     // m is the id of a pattern graph node
@@ -112,78 +122,97 @@ export default class State {
         // update in/out arrays
         // updates needed for nodes entering Tin/Tout sets on this level
         // no updates needed for nodes which entered these sets before
-        let nTmp = this.modelGraph.nodes.get(n);
-        let mTmp = this.patternGraph.nodes.get(m);
-
-        // cycle through nodes pointing towards n
-        nTmp.incomingEdges.forEach(e => {
-            if (this.in_1.get(e.source.id) === undefined) {
-                this.in_1.set(e.source.id, this.depth)
-                if (!this.inM1(e.source.id))
-                    this.T1in.set(e.source.id, e.source.id); // update T1in
-            }
-        })
+        let targetNode = this.modelGraph.nodes.get(n);
+        let queryNode = this.patternGraph.nodes.get(m);
 
         // cycle through nodes n points to
-        nTmp.outGoingEdges.forEach(e => {
-            if (this.out_1.get(e.target.id) === undefined) {
-                this.out_1.set(e.target.id, this.depth)
-                if (!this.inM1(e.target.id)) {
-                    this.T1out.set(e.target.id, e.target.id)
+        targetNode.incomingEdges.forEach(e => {
+            let node = this.modelGraph.nodes.get(e.target.id);
+            if(this.in_1.get(node.id) === undefined){// if the note is not in T1in or mapping
+                this.in_1.set(node.id,this.depth)
+                if (!this.inM1(node.id))		// if not in M1, add into T1in
+                this.T1in.set(node.id,node.id);
+            }
+
+        })
+
+        targetNode.outGoingEdges.forEach(e=>{
+            let node = this.modelGraph.nodes.get(e.target.id)
+            if (this.out_1.get(node.id) === undefined){	// if the note is not in T1out or mapping
+                this.out_1.set(node.id,this.depth)
+                if (!this.inM1(node.id))		// if not in M1, add into T1out
+                    this.T1out.set(node.id,node.id);
+            }
+        })
+
+        queryNode.incomingEdges.forEach(e=>{
+            let node = this.patternGraph.nodes.get(e.target.id)
+            if(this.in_2.get(node.id) === undefined){
+                this.in_2.set(node.id,this.depth)
+                if(!this.inM2(node.id)){
+                    this.T2in.set(node.id,node.id)
                 }
             }
-
+            
         })
 
-        // cycle through nodes pointing towards m
-        mTmp.incomingEdges.forEach(e => {
-            if (this.in_2.get(e.source.id) === undefined) {
-                this.in_2.set(e.source.id, this.depth)
-                if (!this.inM2(e.source.id))
-                    this.T2in.set(e.source.id, e.source.id); // update T1in
-            }
-        })
-
-        // cycle through nodes m points to
-        mTmp.outGoingEdges.forEach(e => {
-            if (this.out_2.get(e.target.id) === undefined) {
-                this.out_2.set(e.target.id, this.depth)
-                if (!this.inM2(e.target.id)) {
-                    this.T2out.set(e.target.id, e.target.id)
+        queryNode.outGoingEdges.forEach(e=>{
+            let node = this.patternGraph.nodes.get(e.target.id)
+            if(this.out_2.get(node.id) === undefined){
+                this.out_2.set(node.id,this.depth)
+                if(!this.inM2(node.id)){
+                    this.T2out.set(node.id,node.id)
                 }
             }
-
         })
+
+
+
 
     }
 
     backtrack(n:string,m:string){
-        this.core_1.delete(n)
-        this.core_2.delete(m)
+        this.core_1.set(n,undefined)
+        this.core_2.set(m,undefined)
+
         this.unmapped1.set(n,n)
         this.unmapped2.set(m,m)
 
-        this.core_1.forEach(nodeId=>{
-            if(this.in_1.get(nodeId) == this.depth){
-                this.in_1.delete(nodeId)
-                this.T1in.delete(nodeId)
+        this.core_1.forEach((v,k)=>{
+            if(this.in_1.get(k) == this.depth){
+                this.in_1.delete(k)
+                this.T1in.delete(k)
             }
-            if(this.out_1.get(nodeId) == this.depth){
-                this.out_1.delete(nodeId)
-                this.T1out.delete(nodeId)
+            if(this.out_1.get(k) == this.depth){
+                this.out_1.delete(k)
+                this.T1out.delete(k)
             }
         })
 
-        this.core_2.forEach(nodeId=>{
-            if(this.in_2.get(nodeId) == this.depth){
-                this.in_2.delete(nodeId)
-                this.T2in.delete(nodeId)
+        this.core_2.forEach((v,k)=>{
+            if(this.in_2.get(k) == this.depth){
+                this.in_2.delete(k)
+                this.T2in.delete(k)
             }
-            if(this.out_2.get(nodeId) == this.depth){
-                this.out_2.delete(nodeId)
-                this.T2out.delete(nodeId)
+            if(this.out_2.get(k) == this.depth){
+                this.out_2.delete(k)
+                this.T2out.delete(k)
             }
         })
+        // put targetNodeId and queryNodeId back into Tin and Tout sets if necessary
+        if (this.inT1in(n)) {
+            this.T1in.set(n,n);
+        }
+        if(this.inT1out(n)){
+            this.T1out.set(n,n)
+        }
+        if(this.inT2in(m)){
+            this.T1in.set(m,m)
+        }
+        if(this.inT2out(m)){
+            this.T2out.set(m,m)
+        }
+        this.depth--
     }
 
     printMapping(){

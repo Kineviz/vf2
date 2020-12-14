@@ -13,7 +13,7 @@ export default class Graph{
         this.adjacencyMatrix = new Map()
     }
 
-    addNode(id:string,label:string,properties:Array<string>){
+    addNode(id:string,label:string,properties?:Array<string>){
         this.nodes.set(id,new GNode(id, label,properties));
         this.adjacencyMatrixUpdateNeeded = true
     }
@@ -23,7 +23,7 @@ export default class Graph{
         node.constraints.set(property,constraint)
     }
 
-    addEdge(id:string,label:string,source:GNode,target:GNode,properties:Array<string>){
+    addEdge(id:string,label:string,source:GNode,target:GNode,properties?:Array<string>){
         this.edges.set(id,new Edge(label,source,target,properties))
         this.adjacencyMatrixUpdateNeeded = true
     }
