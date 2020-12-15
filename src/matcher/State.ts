@@ -24,6 +24,7 @@ export default class State {
 
     public modelGraph: Graph;
     public patternGraph: Graph;
+    public mapping = []
 
     constructor(modelGraph: Graph, patternGraph: Graph) {
         this.modelGraph = modelGraph;
@@ -215,11 +216,13 @@ export default class State {
         this.depth--
     }
 
-    printMapping(){
-        this.core_2.forEach((v,k)=>{
-            console.log(`(${k}-${v})`)
-        })
-        return this.core_2
+    addMapping(){
+        let map = new Map(this.core_2)
+        this.mapping.push(map)
+        // this.core_2.forEach((v,k)=>{
+        //     console.log(`(${k}-${v})`)
+        // })
+        // return this.core_2
 
     }
 }

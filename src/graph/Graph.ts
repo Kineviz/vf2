@@ -13,7 +13,7 @@ export default class Graph{
         this.adjacencyMatrix = new Map()
     }
 
-    addNode(id:string,label:string,properties?:Array<string>){
+    addNode(id:string,label:string,properties?:Object){
         this.nodes.set(id,new GNode(id, label,properties));
         this.adjacencyMatrixUpdateNeeded = true
     }

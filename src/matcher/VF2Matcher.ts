@@ -7,7 +7,7 @@ export default class VF2Matcher {
     match(modelGraph: Graph, patternGraph: Graph) {
         let state = new State(modelGraph, patternGraph);
         this.matchInternal(state, modelGraph, patternGraph);
-        return this.mapping
+        return state.mapping
     }
 
     // internal method for finding subgraphs. called recursively
@@ -15,9 +15,7 @@ export default class VF2Matcher {
         // abort search if we reached the final level of the search tree 
         let sum = 0
         if (s.depth == patternGraph.nodes.size) {
-            let map = s.printMapping()
-            console.log(map)
-            // cb(map)
+            s.addMapping()
             return 1
         }
         else {
@@ -93,7 +91,32 @@ export default class VF2Matcher {
 
     //checks for semantic feasibility of the pair (n,m)
     checkSemanticFeasibility(s: State, n: string, m: string) {
-        return s.modelGraph.nodes.get(n).label == (s.patternGraph.nodes.get(m).label);
+        let passed = true
+        passed = passed && this.checkNodeLabel(s,n,m)
+        passed = passed && this.checkNodeProperty(s,n,m)
+        return passed 
+    }
+
+    checkNodeLabel(s: State, n: string, m: string){
+       return s.modelGraph.nodes.get(n).label == (s.patternGraph.nodes.get(m).label);
+    }
+
+    checkNodeProperty(s:State,n:string,m:string){
+        let passed = true
+        let modelNode = s.modelGraph.nodes.get(n)
+        let patternNode = s.patternGraph.nodes.get(m)
+        let constaints = patternNode.constraints
+        if(constaints.size > 0){
+            constaints.forEach((constaint:any,property)=>{
+                let {operator,value} = constaint
+                let modelNodeValue = modelNode.properties[property]
+                if(modelNodeValue !== undefined){
+                    passed = passed && value == modelNodeValue
+                }
+            })
+        }
+
+        return passed
     }
 
     //checks for syntactic feasibility of the pair (n,m)
