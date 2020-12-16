@@ -1,5 +1,8 @@
 import GNode from "../graph/Node";
 import { Comparator } from "./Comparator";
+import {equal} from '../operator/equal'
+import {greatThan} from '../operator/greatThan'
+import {lessThan} from '../operator/lessThan'
 
 export default class NodeComparator implements Comparator<GNode>{
     constructor(){
@@ -13,8 +16,19 @@ export default class NodeComparator implements Comparator<GNode>{
             constaints.forEach((constaint:any,property)=>{
                 let {operator,value} = constaint
                 let modelNodeValue = modelNode.properties[property]
-                if(modelNodeValue !== undefined){
-                    passed = passed && value == modelNodeValue
+                switch(operator){
+                    case "equal":{
+                        passed =  equal(value,modelNodeValue)
+                        break
+                    }
+                    case "lessThan":{
+                        passed = lessThan(modelNodeValue,value)
+                        break
+                    }
+                    case "greatThan":{
+                        passed = greatThan(modelNodeValue,value)
+                        break
+                    }
                 }
             })
         }
