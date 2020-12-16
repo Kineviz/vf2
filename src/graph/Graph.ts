@@ -28,6 +28,28 @@ export default class Graph{
         this.adjacencyMatrixUpdateNeeded = true
     }
 
+    hasEdge(sourceId:string,targetId:string){
+        let edge = null
+        this.edges.forEach(e=>{
+            if(e.source.id === sourceId && e.target.id === targetId){
+                edge = e
+            }
+        })
+
+        return edge?true:false
+    }
+
+    getEdge(sourceId:string,targetId:string){
+        let edge = null
+        this.edges.forEach(e=>{
+            if(e.source.id === sourceId && e.target.id === targetId){
+                edge = e
+            }
+        })
+
+        return edge
+    }
+
     addEdgePropertyConstraint(edgeId:string,property:string,constraint:Object){
         let edge = this.edges.get(edgeId)
         edge.constraints.set(property,constraint)

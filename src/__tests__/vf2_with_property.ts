@@ -1,6 +1,7 @@
 
 import Graph from "../graph/Graph"
 import VF2Matcher from "../matcher/VF2Matcher"
+import NodeComparator from '../comparator/NodeComparator'
 
 function getG1(){
   let g = new Graph()
@@ -62,7 +63,9 @@ beforeAll(()=>{
 //   },1000);
   
   test('match', () => {
-    let matcher = new VF2Matcher();
+    let nodeComparator = new NodeComparator()
+    debugger
+    let matcher = new VF2Matcher(nodeComparator);
     let map= matcher.match(g1, g2)
     expect(map.length).toEqual(1)
     console.log(map)

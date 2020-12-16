@@ -1,3 +1,5 @@
+import Edge from "../graph/Edge";
+import { Comparator } from "../comparator/Comparator";
 import Graph from "../graph/Graph";
 import GNode from "../graph/Node";
 
@@ -25,8 +27,10 @@ export default class State {
     public modelGraph: Graph;
     public patternGraph: Graph;
     public mapping = []
+    nodeComparator: Comparator<GNode>;
+    edgeComparator: Comparator<Edge>;
 
-    constructor(modelGraph: Graph, patternGraph: Graph) {
+    constructor(modelGraph: Graph, patternGraph: Graph,nodeComparator?:Comparator<GNode>,edgeComparator?:Comparator<Edge>) {
         this.modelGraph = modelGraph;
         this.patternGraph = patternGraph;
 
@@ -49,6 +53,9 @@ export default class State {
         this.out_1 = new Map();
         this.out_2 = new Map();
 
+        this.nodeComparator = nodeComparator
+        this.edgeComparator = edgeComparator
+
         // initialize values ("-1" means no mapping / not contained in the set)
         // initially, all sets are empty and no nodes are mapped
         let modelNodes = modelGraph.nodes
@@ -68,6 +75,20 @@ export default class State {
         })
 
     }
+
+    areCompatibleNodes(n:string,m:string):boolean{
+        let targetNode = this.modelGraph.nodes.get(n);
+        let queryNode = this.patternGraph.nodes.get(m);
+        return (this.nodeComparator == null)
+            || (this.nodeComparator.compare(targetNode,queryNode) == true);
+    }
+
+    areCompatibleEdges(v1:string, v2:string,u1:string,u2:string){
+        let n = this.modelGraph.getEdge(v1,v2)
+        let m = this.patternGraph.getEdge(u1,u2)
+        return (this.edgeComparator == null) || (this.edgeComparator.compare(n,m) == true)
+    }
+
 
     inM1(nodeId: string) {
         return this.core_1.get(nodeId) !== undefined ? true : false;

@@ -1,11 +1,21 @@
 import { stat } from "fs";
 import Graph from "../graph/Graph";
 import State from "./State";
+import { Comparator } from "../comparator/Comparator";
+import GNode from "../graph/Node"
+import Edge from "../graph/Edge";
 
 export default class VF2Matcher {
     mapping: any;
+    nodeComparator: Comparator<GNode>;
+    edgeComparator: Comparator<Edge>;
+    constructor(nodeComparator?: Comparator<GNode>, edgeComparator?: Comparator<Edge>) {
+        this.nodeComparator = nodeComparator
+        this.edgeComparator = edgeComparator
+    }
     match(modelGraph: Graph, patternGraph: Graph) {
-        let state = new State(modelGraph, patternGraph);
+        let state = new State(modelGraph, patternGraph, this.nodeComparator, this.edgeComparator);
+
         this.matchInternal(state, modelGraph, patternGraph);
         return state.mapping
     }
@@ -55,7 +65,7 @@ export default class VF2Matcher {
                 map.set(k, nextPatternNode)
             })
             return map
-        }else if(s.T1in.size > 0 && s.T2in.size > 0){
+        } else if (s.T1in.size > 0 && s.T2in.size > 0) {
             let nextPatternNode = "";
             s.T2in.forEach((v, k) => {
                 if (k.localeCompare(nextPatternNode)) {
@@ -64,20 +74,20 @@ export default class VF2Matcher {
             })
             s.T1in.forEach((v, k) => {
                 map.set(k, nextPatternNode)
-            }) 
+            })
 
             return map
         }
-        else{
+        else {
             let nextPatternNode = "";
             s.unmapped2.forEach((v, k) => {
                 if (k.localeCompare(nextPatternNode)) {
                     nextPatternNode = k
                 }
-            }) 
+            })
 
-            s.unmapped1.forEach((v,k)=>{
-                map.set(k, nextPatternNode) 
+            s.unmapped1.forEach((v, k) => {
+                map.set(k, nextPatternNode)
             })
             return map
         }
@@ -92,25 +102,64 @@ export default class VF2Matcher {
     //checks for semantic feasibility of the pair (n,m)
     checkSemanticFeasibility(s: State, n: string, m: string) {
         let passed = true
-        passed = passed && this.checkNodeLabel(s,n,m)
-        passed = passed && this.checkNodeProperty(s,n,m)
-        return passed 
+        passed = passed && this.checkNodeLabel(s, n, m)
+        passed = passed && this.areCompatibleNodes(s, n, m)
+        passed = passed && this.areCompatibleEdges(s,n,m)
+        return passed
     }
 
-    checkNodeLabel(s: State, n: string, m: string){
-       return s.modelGraph.nodes.get(n).label == (s.patternGraph.nodes.get(m).label);
+    areCompatibleNodes(s: State, n: string, m: string) {
+        return s.areCompatibleNodes(n, m)
     }
 
-    checkNodeProperty(s:State,n:string,m:string){
+    areCompatibleEdges(s: State, n: string, m: string) {
+        let passed = true
+        let modelNode = s.modelGraph.nodes.get(n)
+        let patternNode = s.patternGraph.nodes.get(m)
+        modelNode.incomingEdges.forEach(e => {
+            if (s.core_1.get(e.source.id)) {
+                //m nodeId 
+                let nodeId = s.core_1.get(e.source.id)
+                let v1 = e.source.id
+                let v2 = e.target.id
+
+                if (!s.patternGraph.hasEdge(nodeId, m) || !s.areCompatibleEdges(v1, v2, nodeId, m)) {
+                    passed = false
+                }
+            }
+        })
+
+        modelNode.outGoingEdges.forEach(e => {
+            if (s.core_1.get(e.target.id)) {
+                let nodeId = s.core_1.get(e.target.id)
+                let v1 = e.source.id
+                let v2 = e.target.id
+
+                if (!s.patternGraph.hasEdge(m, nodeId) || !s.areCompatibleEdges(v1, v2, m, nodeId)) {
+                    passed = false
+                }
+            }
+        })
+
+        //TODO check if modelGraph have edges when patern graph have page 
+
+        return passed
+    }
+
+    checkNodeLabel(s: State, n: string, m: string) {
+        return s.modelGraph.nodes.get(n).label == (s.patternGraph.nodes.get(m).label);
+    }
+
+    checkNodeProperty(s: State, n: string, m: string) {
         let passed = true
         let modelNode = s.modelGraph.nodes.get(n)
         let patternNode = s.patternGraph.nodes.get(m)
         let constaints = patternNode.constraints
-        if(constaints.size > 0){
-            constaints.forEach((constaint:any,property)=>{
-                let {operator,value} = constaint
+        if (constaints.size > 0) {
+            constaints.forEach((constaint: any, property) => {
+                let { operator, value } = constaint
                 let modelNodeValue = modelNode.properties[property]
-                if(modelNodeValue !== undefined){
+                if (modelNodeValue !== undefined) {
                     passed = passed && value == modelNodeValue
                 }
             })
@@ -119,13 +168,21 @@ export default class VF2Matcher {
         return passed
     }
 
+    checkEdgeType(s: State, n: string, m: string) {
+        let passed = true
+        let modelNode = s.modelGraph.nodes.get(n)
+        let patternNode = s.patternGraph.nodes.get(m)
+        modelNode.incomingEdges.forEach(e => {
+        })
+    }
+
     //checks for syntactic feasibility of the pair (n,m)
     checkSyntacticFeasibility(s: State, n: string, m: string) {
         let passed = true;
         passed = passed && this.checkRpredAndRsucc(s, n, m); // check Rpred / Rsucc conditions (subgraph isomorphism definition)
         // passed = passed && this.checkRin(s, n, m);
         // passed = passed && this.checkRout(s, n, m);
-        passed = passed && this.checkInAndOut(s,n,m)
+        passed = passed && this.checkInAndOut(s, n, m)
         passed = passed && this.checkNew(s, n, m);
         return passed; // return result	
     }
@@ -184,7 +241,7 @@ export default class VF2Matcher {
      * @param n model graph node id
      * @param m  query graph node id
      */
-    checkInAndOut(s:State,n:string,m:string){
+    checkInAndOut(s: State, n: string, m: string) {
         let modelNode = s.modelGraph.nodes.get(n)
         let queryNode = s.patternGraph.nodes.get(m)
         let targetPredCnt = 0, targetSucCnt = 0
@@ -194,35 +251,35 @@ export default class VF2Matcher {
         // The number predecessors/successors of the target node that are in T1in
         // must be larger than or equal to those of the query node that are in T2in
 
-        modelNode.incomingEdges.forEach(e=>{
+        modelNode.incomingEdges.forEach(e => {
             let node = s.modelGraph.nodes.get(e.source.id);
-            if(s.inT1in(node.id)){
+            if (s.inT1in(node.id)) {
                 targetPredCnt++
             }
         })
 
-        modelNode.outGoingEdges.forEach(e=>{
+        modelNode.outGoingEdges.forEach(e => {
             let node = s.modelGraph.nodes.get(e.target.id)
-            if(s.inT1in(node.id)){
+            if (s.inT1in(node.id)) {
                 targetSucCnt++
             }
         })
 
-        queryNode.incomingEdges.forEach(e=>{
+        queryNode.incomingEdges.forEach(e => {
             let node = s.patternGraph.nodes.get(e.source.id)
-            if(s.inT2in(node.id)){
+            if (s.inT2in(node.id)) {
                 queryPredCnt++
             }
         })
 
-        queryNode.outGoingEdges.forEach(e=>{
+        queryNode.outGoingEdges.forEach(e => {
             let node = s.patternGraph.nodes.get(e.target.id)
-            if(s.inT2in(node.id)){
+            if (s.inT2in(node.id)) {
                 queryPredCnt++;
             }
         })
 
-        if (targetPredCnt < queryPredCnt || targetSucCnt < querySucCnt){
+        if (targetPredCnt < queryPredCnt || targetSucCnt < querySucCnt) {
             return false;
         }
 
@@ -231,35 +288,35 @@ export default class VF2Matcher {
         // must be larger than or equal to those of the query node that are in T2out
         targetPredCnt = 0; targetSucCnt = 0;
         queryPredCnt = 0; querySucCnt = 0;
-        modelNode.incomingEdges.forEach(e=>{
+        modelNode.incomingEdges.forEach(e => {
             let node = s.modelGraph.nodes.get(e.source.id)
-            if(s.inT1out(node.id)){
+            if (s.inT1out(node.id)) {
                 targetPredCnt++
             }
         })
 
-        modelNode.outGoingEdges.forEach(e=>{
+        modelNode.outGoingEdges.forEach(e => {
             let node = s.modelGraph.nodes.get(e.target.id)
-            if(s.inT1out(node.id)){
+            if (s.inT1out(node.id)) {
                 targetSucCnt++
             }
         })
 
-        queryNode.incomingEdges.forEach(e=>{
+        queryNode.incomingEdges.forEach(e => {
             let node = s.patternGraph.nodes.get(e.source.id)
-            if(s.inT2out(node.id)){
+            if (s.inT2out(node.id)) {
                 queryPredCnt++
             }
         })
 
-        queryNode.outGoingEdges.forEach(e=>{
+        queryNode.outGoingEdges.forEach(e => {
             let node = s.patternGraph.nodes.get(e.target.id)
-            if(s.inT2out(node.id)){
+            if (s.inT2out(node.id)) {
                 queryPredCnt++
             }
         })
 
-        if (targetPredCnt < queryPredCnt || targetSucCnt < querySucCnt){
+        if (targetPredCnt < queryPredCnt || targetSucCnt < querySucCnt) {
             return false;
         }
 
@@ -337,7 +394,7 @@ export default class VF2Matcher {
      * @param n Model Graph Node ID
      * @param m Query Graph Node ID
      */
-    checkNew(s:State,n:string,m:string){
+    checkNew(s: State, n: string, m: string) {
         let targetNode = s.modelGraph.nodes.get(n);
         let queryNode = s.patternGraph.nodes.get(m);
 
@@ -347,35 +404,35 @@ export default class VF2Matcher {
         // In Rule
         // The number predecessors/successors of the target node that are in T1in
         // must be larger than or equal to those of the query node that are in T2in
-        targetNode.incomingEdges.forEach(e=>{
+        targetNode.incomingEdges.forEach(e => {
             let node = s.modelGraph.nodes.get(e.source.id)
-            if(s.inN1Tilde(node.id)){
+            if (s.inN1Tilde(node.id)) {
                 targetPredCnt++
             }
         })
 
-        targetNode.outGoingEdges.forEach(e=>{
+        targetNode.outGoingEdges.forEach(e => {
             let node = s.modelGraph.nodes.get(e.target.id)
-            if(s.inN1Tilde(node.id)){
+            if (s.inN1Tilde(node.id)) {
                 targetSucCnt++;
             }
         })
 
-        queryNode.incomingEdges.forEach(e=>{
+        queryNode.incomingEdges.forEach(e => {
             let node = s.patternGraph.nodes.get(e.source.id)
-            if(s.inN2Tilde(node.id)){
+            if (s.inN2Tilde(node.id)) {
                 queryPredCnt++
             }
         })
 
-        queryNode.outGoingEdges.forEach(e=>{
+        queryNode.outGoingEdges.forEach(e => {
             let node = s.patternGraph.nodes.get(e.target.id)
-            if(s.inN2Tilde(node.id)){
+            if (s.inN2Tilde(node.id)) {
                 queryPredCnt++
             }
         })
 
-        if (targetPredCnt < queryPredCnt || targetSucCnt < querySucCnt){
+        if (targetPredCnt < queryPredCnt || targetSucCnt < querySucCnt) {
             return false;
         }
 
