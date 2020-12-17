@@ -14,6 +14,9 @@ export default class NodeComparator implements Comparator<GNode>{
         let constaints = patternNode.constraints
         if(constaints.size > 0){
             constaints.forEach((constaint:any,property)=>{
+                if(Array.isArray(constaint)){
+                    constaint=constaint[0]
+                }
                 let {operator,value} = constaint
                 let modelNodeValue = modelNode.properties[property]
                 switch(operator){

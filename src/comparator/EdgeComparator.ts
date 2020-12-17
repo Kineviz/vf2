@@ -17,6 +17,9 @@ export default class EdgeComparator implements Comparator<Edge>{
         }
         else if(constaints.size > 0){
             constaints.forEach((constaint:any,property)=>{
+                if(Array.isArray(constaint)){
+                    constaint=constaint[0]
+                }
                 let {operator,value} = constaint
                 let modelEdgeValue = modelEdge.properties[property]
                 switch(operator){
