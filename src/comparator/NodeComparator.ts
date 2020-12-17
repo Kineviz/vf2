@@ -24,11 +24,11 @@ export default class NodeComparator implements Comparator<GNode>{
                         passed =  equal(value,modelNodeValue)
                         break
                     }
-                    case "lessThan":{
+                    case "less_than":{
                         passed = lessThan(modelNodeValue,value)
                         break
                     }
-                    case "greatThan":{
+                    case "great_than":{
                         passed = greatThan(modelNodeValue,value)
                         break
                     }
