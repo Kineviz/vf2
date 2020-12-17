@@ -11,7 +11,8 @@ export default class EdgeComparator implements Comparator<Edge>{
     compare(modelEdge:Edge,patternEdge:Edge){
         let passed = true
         let constaints = patternEdge.constraints
-        if(modelEdge.label !== patternEdge.label){
+
+        if(modelEdge.label !== patternEdge.label &&patternEdge.label !== "*"){
             passed = false
         }
         else if(constaints.size > 0){

@@ -147,6 +147,9 @@ export default class VF2Matcher {
     }
 
     checkNodeLabel(s: State, n: string, m: string) {
+        if(s.patternGraph.nodes.get(m).label == "*"){
+            return true
+        }
         return s.modelGraph.nodes.get(n).label == (s.patternGraph.nodes.get(m).label);
     }
 
