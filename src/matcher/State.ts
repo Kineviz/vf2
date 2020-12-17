@@ -238,7 +238,16 @@ export default class State {
     }
 
     addMapping(){
-        let map = new Map(this.core_2)
+        console.log(this.core_2)
+        let nodeMap = new Map(this.core_2)
+        let edgeMap = new Map()
+        this.patternGraph.edges.forEach(e=>{
+            let modelSourceNodeId = this.core_2.get(e.source.id)
+            let modelTargetNodeId =  this.core_2.get(e.target.id)
+            let modelEdge = this.modelGraph.getEdge(modelSourceNodeId,modelTargetNodeId)
+            edgeMap.set(e.id,modelEdge.id)
+        })
+        let map = {nodeMap,edgeMap}
         this.mapping.push(map)
         // this.core_2.forEach((v,k)=>{
         //     console.log(`(${k}-${v})`)

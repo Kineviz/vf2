@@ -1,14 +1,17 @@
 
 import Graph from "../graph/Graph"
 import VF2Matcher from "../matcher/VF2Matcher"
+import NodeComparator from '../comparator/NodeComparator'
 
 function getG1(){
   let g = new Graph()
 
+  let node1Property = {name:"jacob",ade:18}
+  let node4Property = {name:"sean",age:20}
   g.addNode("0","A")
-  g.addNode("1","B"); // 1
+  g.addNode("1","B",node1Property); // 1
   g.addNode("2","A"); // 2
-  g.addNode("4","B"); // 3
+  g.addNode("4","B",node4Property); // 3
   g.addNode("7","C"); // 4
 
   g.addEdgeById("0","label","0", "1");
@@ -25,10 +28,15 @@ function getG1(){
 
 function getG2(){
  let g = new Graph();
-   
+  
+ let constraint = {operator:"greatThan",value:17}
+
+
  g.addNode("0","A"); // 0
  g.addNode("1","B"); // 1
  g.addNode("2","A"); // 2
+
+ g.addNodePropertyContraint("1","age",constraint)
  
  g.addEdgeById("0","label","0", "1");
  g.addEdgeById("1","label","1", "2");
@@ -41,23 +49,12 @@ beforeAll(()=>{
     
 },1000)
 
-// test('getInComingingVertices', () => {
-//     let incommingNodes =  g1.getInComingingVertices("0")
-//     let len = incommingNodes.length
-//     expect(len).toEqual(2)
-//   },1000);
-
-//   test('getOutgoingVertices', () => {
-//     let outGoingVertices =  g1.getOutgoingVertices("0")
-//     let len = outGoingVertices.length
-//     debugger
-//     expect(len).toEqual(2)
-//   },1000);
   
   test('match', () => {
-    let matcher = new VF2Matcher();
+    let nodeComparator = new NodeComparator()
+    debugger
+    let matcher = new VF2Matcher(nodeComparator);
     let map= matcher.match(g1, g2)
-    // expect(map[0].get("1")).toEqual("1")
-    // expect(map[1].get("1")).toEqual("4")
+    // expect(map.length).toEqual(1)
     console.log(map)
   },1000);

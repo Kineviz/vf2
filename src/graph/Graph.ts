@@ -23,8 +23,8 @@ export default class Graph{
         node.constraints.set(property,constraint)
     }
 
-    addEdge(id:string,label:string,source:GNode,target:GNode,properties?:Array<string>){
-        this.edges.set(id,new Edge(label,source,target,properties))
+    addEdge(id:string,label:string,source:GNode,target:GNode,properties?:Object){
+        this.edges.set(id,new Edge(id,label,source,target,properties))
         this.adjacencyMatrixUpdateNeeded = true
     }
 
@@ -39,7 +39,7 @@ export default class Graph{
         return edge?true:false
     }
 
-    getEdge(sourceId:string,targetId:string){
+    getEdge(sourceId:string,targetId:string,type?:string){
         let edge = null
         this.edges.forEach(e=>{
             if(e.source.id === sourceId && e.target.id === targetId){
@@ -55,10 +55,10 @@ export default class Graph{
         edge.constraints.set(property,constraint)
     }
 
-    addEdgeById(id:string,label:string,sourceId:string,targetId:string){
+    addEdgeById(id:string,label:string,sourceId:string,targetId:string,property?:Object){
         let sourceNode:GNode = this.nodes.get(sourceId)
         let targetNode:GNode = this.nodes.get(targetId)
-        this.addEdge(id,label,sourceNode,targetNode)
+        this.addEdge(id,label,sourceNode,targetNode,property)
     }
 
     getInComingingVertices(targetId:string){
