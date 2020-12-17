@@ -27,11 +27,11 @@ export default class EdgeComparator implements Comparator<Edge>{
                         passed =  equal(value,modelEdgeValue)
                         break
                     }
-                    case "lessThan":{
+                    case "less_than":{
                         passed = lessThan(modelEdgeValue,value)
                         break
                     }
-                    case "greatThan":{
+                    case "great_than":{
                         passed = greatThan(modelEdgeValue,value)
                         break
                     }
