@@ -3,6 +3,10 @@ import { Comparator } from "./Comparator";
 import {equal} from '../operator/equal'
 import {greatThan} from '../operator/greatThan'
 import {lessThan} from '../operator/lessThan'
+import {between} from '../operator/between'
+import {like} from '../operator/like'
+import {include} from '../operator/in'
+
 export default class EdgeComparator implements Comparator<Edge>{
     constructor(){
 
@@ -20,7 +24,7 @@ export default class EdgeComparator implements Comparator<Edge>{
                 if(Array.isArray(constaint)){
                     constaint=constaint[0]
                 }
-                let {operator,value} = constaint
+                let {operator,value,min,max} = constaint
                 let modelEdgeValue = modelEdge.properties[property]
                 switch(operator){
                     case "equal":{
@@ -33,6 +37,19 @@ export default class EdgeComparator implements Comparator<Edge>{
                     }
                     case "great_than":{
                         passed = greatThan(modelEdgeValue,value)
+                        break
+                    }
+                    case "between":{
+                        passed = between(min,modelEdgeValue,max)
+                            break
+                    }
+                    case "like":{
+                        passed = like(modelEdgeValue,value)
+                        break
+                    }
+                    case 'in':{
+                        let array = value.split(",")
+                        passed = include(array,modelEdgeValue)
                         break
                     }
                 }

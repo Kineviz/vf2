@@ -1,5 +1,6 @@
 
 export function equal(a:any,b:any){
+    debugger
     if(!isNaN(a) && !isNaN(b)){
         return parseFloat(a) == parseFloat(b)
     }

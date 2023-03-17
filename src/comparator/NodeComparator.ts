@@ -3,6 +3,9 @@ import { Comparator } from "./Comparator";
 import {equal} from '../operator/equal'
 import {greatThan} from '../operator/greatThan'
 import {lessThan} from '../operator/lessThan'
+import {between} from '../operator/between'
+import {like} from '../operator/like'
+import {include} from '../operator/in'
 
 export default class NodeComparator implements Comparator<GNode>{
     constructor(){
@@ -17,8 +20,9 @@ export default class NodeComparator implements Comparator<GNode>{
                 if(Array.isArray(constaint)){
                     constaint=constaint[0]
                 }
-                let {operator,value} = constaint
+                let {operator,value,min,max} = constaint
                 let modelNodeValue = modelNode.properties[property]
+                debugger
                 switch(operator){
                     case "equal":{
                         passed =  equal(value,modelNodeValue)
@@ -30,6 +34,19 @@ export default class NodeComparator implements Comparator<GNode>{
                     }
                     case "great_than":{
                         passed = greatThan(modelNodeValue,value)
+                        break
+                    }
+                    case "between":{
+                        passed = between(min,modelNodeValue,max)
+                            break
+                    }
+                    case "like":{
+                        passed = like(modelNodeValue,value)
+                        break
+                    }
+                    case 'in':{
+                        let array = value.split(",")
+                        passed = include(array,modelNodeValue)
                         break
                     }
                 }
