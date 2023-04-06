@@ -22,7 +22,6 @@ export default class NodeComparator implements Comparator<GNode>{
                 }
                 let {operator,value,min,max} = constaint
                 let modelNodeValue = modelNode.properties[property]
-                debugger
                 switch(operator){
                     case "equal":{
                         passed =  equal(value,modelNodeValue)
@@ -32,7 +31,7 @@ export default class NodeComparator implements Comparator<GNode>{
                         passed = lessThan(modelNodeValue,value)
                         break
                     }
-                    case "great_than":{
+                    case "greater_than":{
                         passed = greatThan(modelNodeValue,value)
                         break
                     }
